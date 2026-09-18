@@ -7,7 +7,7 @@ import '../core/dummy_data.dart';
 import 'home/home_screen.dart';
 import 'home/all_products_screen.dart';
 import 'cart/cart_screen.dart';
-import 'wishlist/wishlist_screen.dart';
+import 'profile/profile_screen.dart';
 import 'scanner/qr_scanner_screen.dart';
 
 class MainWrapper extends StatefulWidget {
@@ -29,7 +29,7 @@ class _MainWrapperState extends State<MainWrapper> {
 
   void _onTabSelected(int index) {
     if (index == 2) {
-      // Open QR scanner modal / screen
+      // Open in-store QR scanner directly
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const QrScannerScreen()),
@@ -45,17 +45,16 @@ class _MainWrapperState extends State<MainWrapper> {
   Widget build(BuildContext context) {
     final List<Widget> screens = [
       HomeScreen(onNavigateTab: _onTabSelected),
-      const AllProductsScreen(title: 'Shop Catalog'),
-      const SizedBox.shrink(), // Placeholder for QR Scanner center button
-      const WishlistScreen(),
+      const AllProductsScreen(title: 'All Products'),
+      const SizedBox.shrink(), // Center button placeholder
       const CartScreen(),
+      const ProfileScreen(),
     ];
 
     return ListenableBuilder(
       listenable: AppState.instance,
       builder: (context, _) {
         final cartCount = AppState.instance.cartCount;
-        final wishlistCount = AppState.instance.wishlistCount;
 
         return Scaffold(
           body: IndexedStack(
@@ -64,16 +63,16 @@ class _MainWrapperState extends State<MainWrapper> {
           ),
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.white.withValues(alpha: 0.98),
               border: Border(
                 top: BorderSide(
-                  color: AppTheme.borderColor.withValues(alpha: 0.8),
+                  color: AppTheme.borderColor.withValues(alpha: 0.9),
                   width: 1,
                 ),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 16,
                   offset: const Offset(0, -4),
                 ),
@@ -86,29 +85,36 @@ class _MainWrapperState extends State<MainWrapper> {
               elevation: 0,
               type: BottomNavigationBarType.fixed,
               selectedItemColor: AppTheme.primaryColor,
-              unselectedItemColor: AppTheme.textSecondary,
+              unselectedItemColor: const Color(0xFFA1A1AA),
               selectedLabelStyle: GoogleFonts.outfit(
                 fontSize: 11.sp,
                 fontWeight: FontWeight.w800,
               ),
               unselectedLabelStyle: GoogleFonts.plusJakartaSans(
-                fontSize: 10.sp,
+                fontSize: 10.5.sp,
                 fontWeight: FontWeight.w600,
               ),
               items: [
+                // 1. Home
                 const BottomNavigationBarItem(
                   icon: Icon(LucideIcons.home),
                   activeIcon: Icon(LucideIcons.home, color: AppTheme.primaryColor),
                   label: 'Home',
                 ),
+
+                // 2. Products
                 const BottomNavigationBarItem(
                   icon: Icon(LucideIcons.layoutGrid),
                   activeIcon: Icon(LucideIcons.layoutGrid, color: AppTheme.primaryColor),
-                  label: 'Shop',
+                  label: 'Products',
                 ),
+
+                // 3. Scan QR (Elevated Center Button)
                 BottomNavigationBarItem(
                   icon: Container(
-                    padding: EdgeInsets.all(8.w),
+                    width: 44.w,
+                    height: 44.w,
+                    margin: EdgeInsets.only(bottom: 2.h),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryColor,
                       shape: BoxShape.circle,
@@ -120,47 +126,18 @@ class _MainWrapperState extends State<MainWrapper> {
                         ),
                       ],
                     ),
-                    child: Icon(
-                      LucideIcons.qrCode,
-                      size: 18.sp,
-                      color: Colors.white,
+                    child: Center(
+                      child: Icon(
+                        LucideIcons.qrCode,
+                        size: 20.sp,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   label: 'Scan QR',
                 ),
-                BottomNavigationBarItem(
-                  icon: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Icon(LucideIcons.heart),
-                      if (wishlistCount > 0)
-                        Positioned(
-                          right: -8.w,
-                          top: -4.h,
-                          child: Container(
-                            padding: EdgeInsets.all(3.w),
-                            constraints: BoxConstraints(minWidth: 16.w, minHeight: 16.h),
-                            decoration: const BoxDecoration(
-                              color: AppTheme.accentPink,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '$wishlistCount',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 9.sp,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  activeIcon: const Icon(LucideIcons.heart, color: AppTheme.primaryColor),
-                  label: 'Wishlist',
-                ),
+
+                // 4. Cart with Live Badge
                 BottomNavigationBarItem(
                   icon: Stack(
                     clipBehavior: Clip.none,
@@ -193,6 +170,15 @@ class _MainWrapperState extends State<MainWrapper> {
                   ),
                   activeIcon: const Icon(LucideIcons.shoppingBag, color: AppTheme.primaryColor),
                   label: 'Cart',
+                ),
+
+                // 5. Profile / Account (Web App 1:1)
+                BottomNavigationBarItem(
+                  icon: const Icon(LucideIcons.user),
+                  activeIcon: const Icon(LucideIcons.user, color: AppTheme.primaryColor),
+                  label: AppState.instance.isCustomerLoggedIn
+                      ? (AppState.instance.currentCustomer?.name.split(' ').first ?? 'Account')
+                      : 'Account',
                 ),
               ],
             ),

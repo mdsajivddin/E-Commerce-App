@@ -45,6 +45,8 @@ class Product {
   final List<String> features;
   final bool isBestSeller;
   final bool isTrending;
+  final String gender;
+  final String shelfLocation;
 
   const Product({
     required this.id,
@@ -68,11 +70,14 @@ class Product {
     required this.features,
     this.isBestSeller = false,
     this.isTrending = false,
+    this.gender = 'Unisex',
+    this.shelfLocation = 'Aisle 3, Shelf B-4 (Luggage Section)',
   });
 
   // Backward compatibility getters
   String get title => name;
   String get categoryId => category;
+  String get segment => gender;
 }
 
 class HeroBannerItem {
@@ -201,6 +206,118 @@ class CartItem {
   double get totalPrice => product.price * quantity;
 }
 
+// --- CUSTOMER PROFILE & ORDER MODELS (Web App 1:1) ---
+
+class CustomerProfile {
+  final String id;
+  final String name;
+  final String email;
+  final String phone;
+  final String avatar;
+  final String badge;
+
+  const CustomerProfile({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.phone,
+    required this.avatar,
+    this.badge = 'Verified Shopper',
+  });
+}
+
+class CustomerOrderItem {
+  final String id;
+  final String name;
+  final String image;
+  final double price;
+  final int quantity;
+
+  const CustomerOrderItem({
+    required this.id,
+    required this.name,
+    required this.image,
+    required this.price,
+    required this.quantity,
+  });
+}
+
+class CustomerOrder {
+  final String orderId;
+  final String date;
+  final double totalAmount;
+  final String paymentMethod;
+  final String status;
+  final String city;
+  final List<CustomerOrderItem> items;
+
+  const CustomerOrder({
+    required this.orderId,
+    required this.date,
+    required this.totalAmount,
+    required this.paymentMethod,
+    required this.status,
+    required this.city,
+    required this.items,
+  });
+}
+
+// --- VENDOR / SELLER PERSONA MODEL ---
+
+class VendorPersona {
+  final String id;
+  final String name;
+  final String role;
+  final String email;
+  final String subtitle;
+  final IconData icon;
+  final Color iconColor;
+  final Color badgeBg;
+  final Color badgeTextColor;
+  final String avatar;
+  final List<String> permissions;
+
+  const VendorPersona({
+    required this.id,
+    required this.name,
+    required this.role,
+    required this.email,
+    required this.subtitle,
+    required this.icon,
+    required this.iconColor,
+    required this.badgeBg,
+    required this.badgeTextColor,
+    required this.avatar,
+    required this.permissions,
+  });
+
+  bool hasPermission(String perm) => permissions.contains(perm);
+}
+
+class VendorOrder {
+  final String orderId;
+  final String customerName;
+  final String customerPhone;
+  final String channel; // 'POS (Counter)' or 'ONLINE'
+  final double totalAmount;
+  final String status; // 'Delivered', 'Shipped', 'Ready for Pickup', 'Pending'
+  final String time;
+  final String date;
+  final List<String> items;
+
+  const VendorOrder({
+    required this.orderId,
+    required this.customerName,
+    required this.customerPhone,
+    required this.channel,
+    required this.totalAmount,
+    required this.status,
+    required this.time,
+    required this.date,
+    required this.items,
+  });
+}
+
 // --- STATE MANAGER ---
 
 class AppState extends ChangeNotifier {
@@ -228,10 +345,92 @@ class AppState extends ChangeNotifier {
   final List<CartItem> _cart = [];
   final List<Product> _wishlist = [];
   Coupon? _appliedCoupon;
+  VendorPersona? _currentVendorPersona;
+
+  CustomerProfile? _currentCustomer = const CustomerProfile(
+    id: 'USR-1082',
+    name: 'Vicky Sharma',
+    email: 'vicky@example.com',
+    phone: '+91 98765 43210',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+    badge: 'Verified Shopper',
+  );
+
+  final List<CustomerOrder> _customerOrders = [
+    const CustomerOrder(
+      orderId: 'ORD-92841',
+      date: '18 Sep 2026, 04:30 PM',
+      totalAmount: 3598.0,
+      paymentMethod: 'UPI Instant',
+      status: 'Delivered',
+      city: 'New Delhi',
+      items: [
+        CustomerOrderItem(
+          id: 'p1',
+          name: 'Minimalist Everyday Backpack',
+          image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&auto=format&fit=crop&q=80',
+          price: 2499.0,
+          quantity: 1,
+        ),
+        CustomerOrderItem(
+          id: 'p2',
+          name: 'Wireless Noise-Cancelling Headphones',
+          image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=80',
+          price: 1099.0,
+          quantity: 1,
+        ),
+      ],
+    ),
+    const CustomerOrder(
+      orderId: 'ORD-78102',
+      date: '14 Sep 2026, 11:15 AM',
+      totalAmount: 1799.0,
+      paymentMethod: 'Card Ending in •••• 8921',
+      status: 'Delivered',
+      city: 'Downtown Center',
+      items: [
+        CustomerOrderItem(
+          id: 'p3',
+          name: 'Classic Organic Cotton Hoodie',
+          image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500&auto=format&fit=crop&q=80',
+          price: 1799.0,
+          quantity: 1,
+        ),
+      ],
+    ),
+  ];
 
   List<CartItem> get cart => List.unmodifiable(_cart);
   List<Product> get wishlist => List.unmodifiable(_wishlist);
   Coupon? get appliedCoupon => _appliedCoupon;
+  VendorPersona? get currentVendorPersona => _currentVendorPersona;
+  bool get isVendorLoggedIn => _currentVendorPersona != null;
+
+  CustomerProfile? get currentCustomer => _currentCustomer;
+  bool get isCustomerLoggedIn => _currentCustomer != null;
+  List<CustomerOrder> get customerOrders => List.unmodifiable(_customerOrders);
+
+  StoreLocation? _selectedStore;
+  StoreLocation get selectedStore => _selectedStore ?? DummyData.stores[0];
+  void setSelectedStore(StoreLocation store) {
+    _selectedStore = store;
+    notifyListeners();
+  }
+
+  void loginCustomer(CustomerProfile profile) {
+    _currentCustomer = profile;
+    notifyListeners();
+  }
+
+  void logoutCustomer() {
+    _currentCustomer = null;
+    notifyListeners();
+  }
+
+  void addCustomerOrder(CustomerOrder order) {
+    _customerOrders.insert(0, order);
+    notifyListeners();
+  }
 
   int get cartCount => _cart.fold(0, (sum, item) => sum + item.quantity);
   int get wishlistCount => _wishlist.length;
@@ -319,6 +518,22 @@ class AppState extends ChangeNotifier {
   void removeCoupon() {
     _appliedCoupon = null;
     notifyListeners();
+  }
+
+  // --- VENDOR PERSONA METHODS ---
+  void loginAsVendorPersona(VendorPersona persona) {
+    _currentVendorPersona = persona;
+    notifyListeners();
+  }
+
+  void logoutVendor() {
+    _currentVendorPersona = null;
+    notifyListeners();
+  }
+
+  bool hasVendorPermission(String perm) {
+    if (_currentVendorPersona == null) return false;
+    return _currentVendorPersona!.hasPermission(perm);
   }
 }
 
@@ -966,6 +1181,14 @@ class DummyData {
       image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&auto=format&fit=crop&q=80',
       category: 'Sports & Gear',
     ),
+    const HeroBannerItem(
+      id: 'banner-3',
+      tag: 'ORIGINALS',
+      title: 'STYLE-STACK: Curated Streetwear Essentials For Everyday Rotation',
+      buttonText: 'Shop Sneakers',
+      image: 'https://images.unsplash.com/photo-1512374382149-233c42b661ac?w=800&auto=format&fit=crop&q=80',
+      category: 'Sports & Gear',
+    ),
   ];
 
   // Curated Offer Cards
@@ -1050,6 +1273,34 @@ class DummyData {
       tag: 'Express Store',
       availableFeatures: ['Scan & Go Mobile Pay', 'Instant Locker Pickup', 'Top 100 Best Sellers'],
     ),
+    const StoreLocation(
+      id: 'store-cyber',
+      name: 'ShopMate Tech Hub - Silicon Square',
+      city: 'Tech Valley',
+      address: 'Block B, Ground Floor, Cyber Park Avenue',
+      timing: '10:00 AM - 9:30 PM (Open Today)',
+      phone: '+1 (555) 789-1234',
+      distance: '5.4 km away',
+      rating: 4.8,
+      reviews: 345,
+      image: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=500&auto=format&fit=crop&q=80',
+      tag: 'Smart Tech Store',
+      availableFeatures: ['Smart Audio Testing Booth', 'QR Scan & Reserve', 'Tech Support Bar'],
+    ),
+    const StoreLocation(
+      id: 'store-greenpark',
+      name: 'ShopMate Lifestyle - Green Valley Mall',
+      city: 'Green Valley',
+      address: 'Wing C, First Floor, Green Valley Mall',
+      timing: '10:30 AM - 10:00 PM (Open Today)',
+      phone: '+1 (555) 901-4321',
+      distance: '7.1 km away',
+      rating: 4.9,
+      reviews: 518,
+      image: 'https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?w=500&auto=format&fit=crop&q=80',
+      tag: 'Lifestyle & Decor Outlet',
+      availableFeatures: ['Furniture Lounge', 'Scan & Ship to Home', 'Fragrance Bar'],
+    ),
   ];
 
   // Value Props Bar
@@ -1123,6 +1374,118 @@ class DummyData {
       discountPercent: 0.0,
       isFreeShipping: true,
       desc: 'Free standard shipping',
+    ),
+  ];
+
+  // Fast Demo Personas for Seller Portal
+  static final List<VendorPersona> vendorPersonas = [
+    const VendorPersona(
+      id: 'persona-owner',
+      name: 'Rajesh Sharma',
+      role: 'Store Owner',
+      email: 'rajesh.sharma@urbanthreads.in',
+      subtitle: 'Rajesh • Full 100% Access',
+      icon: LucideIcons.store,
+      iconColor: Color(0xFFE11D48),
+      badgeBg: Color(0xFFFCE7F3),
+      badgeTextColor: Color(0xFFBE185D),
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+      permissions: [
+        'dashboard',
+        'orders',
+        'pos',
+        'attendance',
+        'employees',
+        'products',
+        'add-product',
+        'shop',
+        'analytics',
+      ],
+    ),
+    const VendorPersona(
+      id: 'persona-cashier',
+      name: 'Rahul Verma',
+      role: 'Cashier Staff',
+      email: 'rahul.cashier@urbanthreads.in',
+      subtitle: 'Rahul • POS & Orders Only',
+      icon: LucideIcons.creditCard,
+      iconColor: Color(0xFF059669),
+      badgeBg: Color(0xFFD1FAE5),
+      badgeTextColor: Color(0xFF047857),
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80',
+      permissions: [
+        'dashboard',
+        'orders',
+        'pos',
+        'attendance',
+      ],
+    ),
+    const VendorPersona(
+      id: 'persona-inventory',
+      name: 'Sneha Kapoor',
+      role: 'Inventory Staff',
+      email: 'sneha.inventory@urbanthreads.in',
+      subtitle: 'Sneha • Catalog & Stock',
+      icon: LucideIcons.boxes,
+      iconColor: Color(0xFF6366F1),
+      badgeBg: Color(0xFFE0E7FF),
+      badgeTextColor: Color(0xFF4338CA),
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
+      permissions: [
+        'dashboard',
+        'orders',
+        'products',
+        'add-product',
+        'attendance',
+      ],
+    ),
+  ];
+
+  // Vendor Recent Orders
+  static final List<VendorOrder> vendorOrders = [
+    const VendorOrder(
+      orderId: 'ORD-VN-9041',
+      customerName: 'Priya Verma',
+      customerPhone: '+91 99200 88771',
+      channel: 'POS (Counter)',
+      totalAmount: 4299,
+      status: 'Delivered',
+      time: '03:45 PM',
+      date: '10 Mar 2026',
+      items: ['AeroGlide Pro Court Low Sneakers'],
+    ),
+    const VendorOrder(
+      orderId: 'ORD-VN-9042',
+      customerName: 'Aarav Mehta',
+      customerPhone: '+91 98112 33441',
+      channel: 'ONLINE',
+      totalAmount: 1999,
+      status: 'Ready for Pickup',
+      time: '01:15 PM',
+      date: '10 Mar 2026',
+      items: ['ShopMate Heritage Oversized Hoodie'],
+    ),
+    const VendorOrder(
+      orderId: 'ORD-VN-9039',
+      customerName: 'Kabir Singhania',
+      customerPhone: '+91 97110 55223',
+      channel: 'ONLINE',
+      totalAmount: 5398,
+      status: 'Shipped',
+      time: '04:10 PM',
+      date: '09 Mar 2026',
+      items: ['Raw Selvedge Relaxed Cargo Denim'],
+    ),
+    const VendorOrder(
+      orderId: 'ORD-VN-9035',
+      customerName: 'Ananya Sharma',
+      customerPhone: '+91 98111 22345',
+      channel: 'POS (Counter)',
+      totalAmount: 2999,
+      status: 'Delivered',
+      time: '11:20 AM',
+      date: '09 Mar 2026',
+      items: ['Acoustic Aura Wireless ANC Headphones'],
     ),
   ];
 }

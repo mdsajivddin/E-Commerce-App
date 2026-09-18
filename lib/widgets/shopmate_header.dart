@@ -6,205 +6,252 @@ import '../core/theme.dart';
 import '../core/dummy_data.dart';
 import '../screens/home/search_screen.dart';
 import '../screens/home/location_screen.dart';
-import '../screens/profile/notifications_screen.dart';
+import '../screens/scanner/qr_scanner_screen.dart';
+import '../screens/wishlist/wishlist_screen.dart';
+import '../screens/seller/seller_login_modal.dart';
+import '../screens/seller/seller_dashboard_screen.dart';
 
 class ShopMateHeader extends StatelessWidget {
   final VoidCallback? onCartTap;
   final VoidCallback? onWishlistTap;
 
-  const ShopMateHeader({
-    super.key,
-    this.onCartTap,
-    this.onWishlistTap,
-  });
+  const ShopMateHeader({super.key, this.onCartTap, this.onWishlistTap});
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: AppState.instance,
       builder: (context, _) {
-        final cartCount = AppState.instance.cartCount;
+        final wishlistCount = AppState.instance.wishlistCount;
+        final isVendor = AppState.instance.isVendorLoggedIn;
+        final currentPersona = AppState.instance.currentVendorPersona;
 
         return Container(
-          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 14.h),
+          padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
           decoration: BoxDecoration(
-            color: AppTheme.backgroundColor,
+            color: const Color(0xFFFAF8F5).withValues(alpha: 0.98),
             border: Border(
               bottom: BorderSide(
-                color: AppTheme.borderColor.withValues(alpha: 0.6),
+                color: AppTheme.borderColor.withValues(alpha: 0.8),
                 width: 1,
               ),
             ),
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Top Brand Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Logo + Tagline
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(7.w),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: Icon(
-                          LucideIcons.shoppingBag,
-                          color: Colors.white,
-                          size: 18.sp,
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'ShopMate',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppTheme.textPrimary,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(left: 4.w, top: 2.h),
-                                width: 6.w,
-                                height: 6.w,
-                                decoration: const BoxDecoration(
-                                  color: AppTheme.primaryColor,
-                                  shape: BoxShape.circle,
-                                ),
+              // 1. TOP ACTIONS ROW: Logo + Location + QR + Wishlist + Become a Seller
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Brand Logo ("ShopMate" with squircle icon)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 36.w,
+                          height: 36.w,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4A5D4E),
+                            borderRadius: BorderRadius.circular(10.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFF4A5D4E,
+                                ).withValues(alpha: 0.25),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          Text(
-                            'CURATED LIFESTYLE',
-                            style: GoogleFonts.outfit(
-                              fontSize: 8.sp,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.primaryColor,
-                              letterSpacing: 0.8,
+                          child: Center(
+                            child: Icon(
+                              LucideIcons.shoppingBag,
+                              color: Colors.white,
+                              size: 18.sp,
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  // Actions: Notifications + Wishlist + Cart
-                  Row(
-                    children: [
-                      // Store Selector
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LocationScreen()),
-                          );
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(999.r),
-                            border: Border.all(color: AppTheme.borderColor),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                LucideIcons.mapPin,
-                                size: 12.sp,
-                                color: AppTheme.primaryColor,
+                        ),
+                        SizedBox(width: 8.w),
+                        RichText(
+                          text: TextSpan(
+                            style: GoogleFonts.outfit(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.6,
+                            ),
+                            children: const [
+                              TextSpan(
+                                text: 'Shop',
+                                style: TextStyle(color: Color(0xFF171717)),
                               ),
-                              SizedBox(width: 4.w),
-                              Text(
-                                'Downtown Store',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.textPrimary,
-                                ),
-                              ),
-                              Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                size: 16.sp,
-                                color: AppTheme.textSecondary,
+                              TextSpan(
+                                text: 'Mate',
+                                style: TextStyle(color: Color(0xFF4A5D4E)),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                      SizedBox(width: 6.w),
+                      ],
+                    ),
+                    SizedBox(width: 12.w),
 
-                      // Notification Icon
-                      IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                          );
-                        },
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          padding: EdgeInsets.all(8.w),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(999.r),
-                            side: const BorderSide(color: AppTheme.borderColor),
+                    // Location Selector Pill ("● 📍 Downtown Cen...")
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LocationScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 6.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(999.r),
+                          border: Border.all(color: const Color(0xFFBBF7D0)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6.w,
+                              height: 6.w,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF10B981),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            SizedBox(width: 5.w),
+                            Icon(
+                              LucideIcons.mapPin,
+                              size: 12.sp,
+                              color: const Color(0xFF15803D),
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              'Downtown Cen...',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11.5.sp,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF15803D),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+
+                    // QR Scanner Button (Circular white button)
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const QrScannerScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 36.w,
+                        height: 36.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Icon(
+                            LucideIcons.qrCode,
+                            size: 16.sp,
+                            color: const Color(0xFF334155),
                           ),
                         ),
-                        icon: Icon(
-                          LucideIcons.bell,
-                          size: 16.sp,
-                          color: AppTheme.textPrimary,
-                        ),
                       ),
-                      SizedBox(width: 6.w),
+                    ),
+                    SizedBox(width: 8.w),
 
-                      // Cart Icon with Badge
-                      Stack(
+                    // Wishlist (Heart) Button (Opens WishlistScreen)
+                    GestureDetector(
+                      onTap: () {
+                        if (onWishlistTap != null) {
+                          onWishlistTap!();
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const WishlistScreen(),
+                            ),
+                          );
+                        }
+                      },
+                      child: Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          IconButton(
-                            onPressed: onCartTap,
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              padding: EdgeInsets.all(8.w),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(999.r),
-                                side: const BorderSide(color: AppTheme.borderColor),
+                          Container(
+                            width: 36.w,
+                            height: 36.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.03),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Icon(
+                                LucideIcons.heart,
+                                size: 16.sp,
+                                color: wishlistCount > 0
+                                    ? const Color(0xFFF43F5E)
+                                    : const Color(0xFF334155),
                               ),
                             ),
-                            icon: Icon(
-                              LucideIcons.shoppingBag,
-                              size: 16.sp,
-                              color: AppTheme.textPrimary,
-                            ),
                           ),
-                          if (cartCount > 0)
+                          if (wishlistCount > 0)
                             Positioned(
                               right: -2.w,
                               top: -2.h,
                               child: Container(
                                 padding: EdgeInsets.all(3.w),
-                                constraints: BoxConstraints(minWidth: 16.w, minHeight: 16.h),
+                                constraints: BoxConstraints(
+                                  minWidth: 16.w,
+                                  minHeight: 16.h,
+                                ),
                                 decoration: const BoxDecoration(
-                                  color: AppTheme.primaryColor,
+                                  color: Color(0xFFF43F5E),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Center(
                                   child: Text(
-                                    '$cartCount',
+                                    '$wishlistCount',
                                     style: GoogleFonts.outfit(
                                       color: Colors.white,
-                                      fontSize: 9.sp,
-                                      fontWeight: FontWeight.w800,
+                                      fontSize: 8.5.sp,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
@@ -212,73 +259,133 @@ class ShopMateHeader extends StatelessWidget {
                             ),
                         ],
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
+                    ),
+                    SizedBox(width: 10.w),
 
-              // Search Bar & Scan Button Row
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
+                    // "Become a Seller" Button (Opens SellerLoginModal / SellerDashboardScreen)
+                    GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SearchScreen()),
-                        );
+                        if (isVendor) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SellerDashboardScreen(),
+                            ),
+                          );
+                        } else {
+                          SellerLoginModal.show(context);
+                        }
                       },
                       child: Container(
-                        height: 44.h,
-                        padding: EdgeInsets.symmetric(horizontal: 14.w),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 7.h,
+                        ),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: const Color(0xFF0F172A),
                           borderRadius: BorderRadius.circular(999.r),
-                          border: Border.all(color: AppTheme.borderColor),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            width: 1,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.02),
-                              blurRadius: 8,
+                              color: const Color(
+                                0xFF0F172A,
+                              ).withValues(alpha: 0.25),
+                              blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
                           ],
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              LucideIcons.search,
-                              size: 16.sp,
-                              color: AppTheme.textSecondary,
+                              LucideIcons.store,
+                              color: const Color(0xFF10B981),
+                              size: 15.sp,
                             ),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: Text(
-                                'Search sneakers, hoodies, watches, decor...',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 12.sp,
-                                  color: AppTheme.textMuted,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.all(4.w),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryLight,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                LucideIcons.slidersHorizontal,
-                                size: 12.sp,
-                                color: AppTheme.primaryColor,
+                            SizedBox(width: 7.w),
+                            Text(
+                              isVendor
+                                  ? 'Seller: ${currentPersona?.role.split(' ').first ?? "Portal"}'
+                                  : 'Become a Seller',
+                              style: GoogleFonts.outfit(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.2,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 10.h),
+
+              // 2. SEARCH BAR ("Search products, kicks...") restored below the top row
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SearchScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  height: 42.h,
+                  padding: EdgeInsets.symmetric(horizontal: 14.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(999.r),
+                    border: Border.all(color: AppTheme.borderColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
+                  child: Row(
+                    children: [
+                      Icon(
+                        LucideIcons.search,
+                        size: 16.sp,
+                        color: Colors.grey.shade400,
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(
+                          'Search products, kicks...',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12.sp,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(4.w),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryLight,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          LucideIcons.slidersHorizontal,
+                          size: 12.sp,
+                          color: AppTheme.primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
