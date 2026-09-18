@@ -83,14 +83,31 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
     if (widget.initialCategory != 'All' && widget.initialCategory.isNotEmpty) {
       _selectedCategories.add(widget.initialCategory);
     }
-    if (widget.initialSearch.isNotEmpty) {
-      _searchQuery = widget.initialSearch;
-      _searchController.text = widget.initialSearch;
+    final initialQ = widget.initialSearch.isNotEmpty
+        ? widget.initialSearch
+        : AppState.instance.searchQuery;
+    if (initialQ.isNotEmpty) {
+      _searchQuery = initialQ;
+      _searchController.text = initialQ;
+    }
+    AppState.instance.addListener(_onAppStateChanged);
+  }
+
+  void _onAppStateChanged() {
+    if (mounted && _searchQuery != AppState.instance.searchQuery) {
+      setState(() {
+        _searchQuery = AppState.instance.searchQuery;
+        _searchController.value = _searchController.value.copyWith(
+          text: _searchQuery,
+          selection: TextSelection.collapsed(offset: _searchQuery.length),
+        );
+      });
     }
   }
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onAppStateChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -150,6 +167,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
       _searchQuery = '';
       _searchController.clear();
     });
+    AppState.instance.clearSearchQuery();
   }
 
   List<Product> get _filteredProducts {
@@ -434,7 +452,10 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
         ),
         child: TextField(
           controller: _searchController,
-          onChanged: (val) => setState(() => _searchQuery = val),
+          onChanged: (val) {
+            setState(() => _searchQuery = val);
+            AppState.instance.setSearchQuery(val);
+          },
           style: GoogleFonts.plusJakartaSans(
             fontSize: 12.5.sp,
             color: const Color(0xFF171717),
@@ -451,6 +472,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                 ? GestureDetector(
                     onTap: () {
                       _searchController.clear();
+                      AppState.instance.clearSearchQuery();
                       setState(() => _searchQuery = '');
                     },
                     child: Icon(
@@ -460,7 +482,7 @@ class _AllProductsScreenState extends State<AllProductsScreen> {
                     ),
                   )
                 : null,
-            hintText: 'Search products, brands, kicks...',
+            hintText: 'Search products, kicks...',
             hintStyle: GoogleFonts.plusJakartaSans(
               fontSize: 12.sp,
               color: const Color(0xFF94A3B8),

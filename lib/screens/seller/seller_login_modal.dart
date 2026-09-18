@@ -24,17 +24,22 @@ class SellerLoginModal extends StatefulWidget {
 class _SellerLoginModalState extends State<SellerLoginModal> {
   int _selectedTabIndex = 0; // 0: Store Owner, 1: Shop Employee, 2: Register Shop
   bool _isLoading = false;
+  String _category = 'Fashion & Footwear';
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
   final TextEditingController _ownerNameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _emailController.text = 'vendor@business.com';
+    _emailController.text = 'seller@shopmate.in';
     _passwordController.text = '••••••••';
+    _phoneController.text = '+91 98765 43210';
+    _shopNameController.text = 'Urban Threads Co.';
+    _ownerNameController.text = 'Rajesh Sharma';
   }
 
   @override
@@ -43,6 +48,7 @@ class _SellerLoginModalState extends State<SellerLoginModal> {
     _passwordController.dispose();
     _shopNameController.dispose();
     _ownerNameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -54,7 +60,7 @@ class _SellerLoginModalState extends State<SellerLoginModal> {
       } else if (index == 1) {
         _emailController.text = 'rahul.cashier@urbanthreads.in';
       } else {
-        _emailController.text = 'newvendor@shopmate.in';
+        _emailController.text = 'seller@shopmate.in';
       }
     });
   }
@@ -68,6 +74,30 @@ class _SellerLoginModalState extends State<SellerLoginModal> {
     setState(() => _isLoading = false);
 
     Navigator.pop(context); // Close modal
+
+    // Show toast
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(LucideIcons.checkCircle2, color: Color(0xFF34D399), size: 18),
+            const SizedBox(width: 8),
+            Text(
+              'Welcome ${persona.name}! Logged in as ${persona.role}',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+                fontSize: 12.5,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF0F172A),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(milliseconds: 2500),
+      ),
+    );
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -92,6 +122,32 @@ class _SellerLoginModalState extends State<SellerLoginModal> {
     setState(() => _isLoading = false);
 
     Navigator.pop(context);
+
+    // Show toast
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(LucideIcons.checkCircle2, color: Color(0xFF34D399), size: 18),
+            const SizedBox(width: 8),
+            Text(
+              _selectedTabIndex == 2
+                  ? 'Shop "${_shopNameController.text.trim().isEmpty ? "Urban Threads" : _shopNameController.text.trim()}" Registered Successfully!'
+                  : 'Welcome! Accessing ${targetPersona.role} Portal',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+                fontSize: 12.5,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF0F172A),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(milliseconds: 2500),
+      ),
+    );
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -203,7 +259,101 @@ class _SellerLoginModalState extends State<SellerLoginModal> {
                       _buildTextField(
                         controller: _shopNameController,
                         icon: LucideIcons.store,
-                        hint: 'e.g. Zara Boutique Galleria',
+                        hint: 'e.g. Zara Boutique',
+                      ),
+                      SizedBox(height: 12.h),
+
+                      Text(
+                        'Owner Name',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      _buildTextField(
+                        controller: _ownerNameController,
+                        icon: LucideIcons.user,
+                        hint: 'Full Name',
+                      ),
+                      SizedBox(height: 12.h),
+
+                      Text(
+                        'Phone',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      _buildTextField(
+                        controller: _phoneController,
+                        icon: LucideIcons.phone,
+                        hint: '+91 98765 43210',
+                      ),
+                      SizedBox(height: 12.h),
+
+                      Text(
+                        'Category',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      Container(
+                        height: 44.h,
+                        padding: EdgeInsets.symmetric(horizontal: 12.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: const Color(0xFFCBD5E1),
+                            width: 1,
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _category,
+                            isExpanded: true,
+                            icon: Icon(
+                              LucideIcons.chevronDown,
+                              size: 16.sp,
+                              color: const Color(0xFF64748B),
+                            ),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12.5.sp,
+                              color: const Color(0xFF0F172A),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'Fashion & Footwear',
+                                child: Text('Fashion & Footwear'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Electronics & Tech',
+                                child: Text('Electronics & Tech'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Home & Kitchen',
+                                child: Text('Home & Kitchen'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Sports & Gear',
+                                child: Text('Sports & Gear'),
+                              ),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() => _category = val);
+                              }
+                            },
+                          ),
+                        ),
                       ),
                       SizedBox(height: 12.h),
                     ],
@@ -488,6 +638,10 @@ class _SellerLoginModalState extends State<SellerLoginModal> {
 
   Widget _buildTabItem(int index, String label) {
     final isSelected = _selectedTabIndex == index;
+    // In webapp: employee active is pink (bg-pink-500 text-white), owner/register active is white (bg-white text-slate-900)
+    final Color activeBg = index == 1 ? const Color(0xFFEC4899) : Colors.white;
+    final Color activeText = index == 1 ? Colors.white : const Color(0xFF0F172A);
+
     return Expanded(
       child: GestureDetector(
         onTap: () => _onTabChanged(index),
@@ -495,7 +649,7 @@ class _SellerLoginModalState extends State<SellerLoginModal> {
           duration: const Duration(milliseconds: 180),
           padding: EdgeInsets.symmetric(vertical: 6.h),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
+            color: isSelected ? activeBg : Colors.transparent,
             borderRadius: BorderRadius.circular(999.r),
             boxShadow: isSelected
                 ? [
@@ -513,7 +667,7 @@ class _SellerLoginModalState extends State<SellerLoginModal> {
               style: GoogleFonts.outfit(
                 fontSize: 11.5.sp,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+                color: isSelected ? activeText : const Color(0xFFCBD5E1),
               ),
             ),
           ),

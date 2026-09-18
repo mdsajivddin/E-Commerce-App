@@ -64,6 +64,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
               },
+              onSearchSubmitted: (query) {
+                if (widget.onNavigateTab != null) {
+                  widget.onNavigateTab!(1);
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          AllProductsScreen(initialSearch: query),
+                    ),
+                  );
+                }
+              },
             ),
 
             // Scrollable Content matching the 13 exact sections from the live web app

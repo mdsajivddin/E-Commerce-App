@@ -132,27 +132,27 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
       actions: [
         // "← Customer Store" button to easily return
         Padding(
-          padding: EdgeInsets.only(right: 12.w),
+          padding: EdgeInsets.only(right: 4.w),
           child: TextButton.icon(
             onPressed: () {
               Navigator.pop(context);
             },
             icon: Icon(
               LucideIcons.arrowLeft,
-              size: 14.sp,
+              size: 13.sp,
               color: const Color(0xFF38BDF8),
             ),
             label: Text(
-              'Customer Store',
+              'Storefront',
               style: GoogleFonts.outfit(
-                fontSize: 11.5.sp,
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF38BDF8),
               ),
             ),
             style: TextButton.styleFrom(
               backgroundColor: Colors.white.withValues(alpha: 0.08),
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+              padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 5.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(999.r),
                 side: BorderSide(
@@ -160,6 +160,41 @@ class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
                 ),
               ),
             ),
+          ),
+        ),
+        // Sign Out button
+        Padding(
+          padding: EdgeInsets.only(right: 12.w),
+          child: IconButton(
+            icon: const Icon(LucideIcons.logOut, color: Color(0xFFFB7185), size: 17),
+            tooltip: 'Sign Out from Portal',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () {
+              AppState.instance.logoutVendor();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(LucideIcons.checkCircle2, color: Color(0xFF34D399), size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Logged out from Vendor Portal',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: const Color(0xFF0F172A),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  duration: const Duration(milliseconds: 2000),
+                ),
+              );
+            },
           ),
         ),
       ],

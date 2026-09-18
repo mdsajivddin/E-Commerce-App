@@ -346,6 +346,19 @@ class AppState extends ChangeNotifier {
   final List<Product> _wishlist = [];
   Coupon? _appliedCoupon;
   VendorPersona? _currentVendorPersona;
+  String _searchQuery = '';
+
+  String get searchQuery => _searchQuery;
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
+  void clearSearchQuery() {
+    _searchQuery = '';
+    notifyListeners();
+  }
 
   CustomerProfile? _currentCustomer = const CustomerProfile(
     id: 'USR-1082',
