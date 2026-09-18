@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme.dart';
 import '../../core/dummy_data.dart';
@@ -17,10 +18,17 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _isSearching = false;
   List<Product> _searchResults = [];
 
-  final List<String> _recentSearches = ['Headphones', 'Watch', 'Chair', 'Shoes'];
+  final List<String> _recentSearches = ['Backpack', 'Headphones', 'Sneakers', 'Hoodie', 'Watch'];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _onSearch(String query) {
-    if (query.isEmpty) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) {
       setState(() {
         _isSearching = false;
         _searchResults = [];
@@ -31,7 +39,10 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       _isSearching = true;
       _searchResults = DummyData.products
-          .where((p) => p.title.toLowerCase().contains(query.toLowerCase()))
+          .where((p) =>
+              p.name.toLowerCase().contains(q) ||
+              p.brand.toLowerCase().contains(q) ||
+              p.category.toLowerCase().contains(q))
           .toList();
     });
   }
@@ -39,6 +50,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         titleSpacing: 0,
         title: Padding(
@@ -48,16 +60,10 @@ class _SearchScreenState extends State<SearchScreen> {
             autofocus: true,
             onChanged: _onSearch,
             decoration: InputDecoration(
-              hintText: 'Search products...',
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              filled: true,
-              fillColor: Colors.grey.shade100,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide.none,
-              ),
+              hintText: 'Search products, brands, categories...',
+              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               suffixIcon: IconButton(
-                icon: const Icon(LucideIcons.x, color: Colors.grey),
+                icon: const Icon(LucideIcons.x, color: AppTheme.textSecondary, size: 18),
                 onPressed: () {
                   _searchController.clear();
                   _onSearch('');
@@ -67,9 +73,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
       ),
-      body: _isSearching
-          ? _buildSearchResults()
-          : _buildRecentSearches(),
+      body: _isSearching ? _buildSearchResults() : _buildRecentSearches(),
     );
   }
 
@@ -82,11 +86,17 @@ class _SearchScreenState extends State<SearchScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Recent Searches', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
-              Text('Clear All', style: TextStyle(fontSize: 14.sp, color: AppTheme.primaryColor, fontWeight: FontWeight.w600)),
+              Text(
+                'Popular Searches',
+                style: GoogleFonts.outfit(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
             ],
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
           Wrap(
             spacing: 8.w,
             runSpacing: 8.h,
@@ -97,36 +107,50 @@ class _SearchScreenState extends State<SearchScreen> {
                   _onSearch(search);
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: AppTheme.borderColor),
+                    borderRadius: BorderRadius.circular(999.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(LucideIcons.clock, size: 14.sp, color: AppTheme.textSecondary),
-                      SizedBox(width: 8.w),
-                      Text(search, style: TextStyle(fontSize: 14.sp, color: AppTheme.textPrimary)),
+                      Icon(LucideIcons.search, size: 12.sp, color: AppTheme.textSecondary),
+                      SizedBox(width: 6.w),
+                      Text(
+                        search,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               );
             }).toList(),
           ),
-          SizedBox(height: 32.h),
-          Text('Suggested for you', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
-          SizedBox(height: 16.h),
+          SizedBox(height: 24.h),
+          Text(
+            'Recommended For You',
+            style: GoogleFonts.outfit(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          SizedBox(height: 12.h),
           Expanded(
             child: GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 16.w,
-                mainAxisSpacing: 16.h,
+                childAspectRatio: 0.58,
+                crossAxisSpacing: 12.w,
+                mainAxisSpacing: 14.h,
               ),
-              itemCount: 2, // Show a few suggested items
+              itemCount: 4,
               itemBuilder: (context, index) {
                 return ProductCard(product: DummyData.products[index]);
               },
@@ -143,11 +167,24 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(LucideIcons.searchX, size: 64.sp, color: Colors.grey.shade300),
+            Icon(LucideIcons.searchX, size: 54.sp, color: Colors.grey.shade400),
             SizedBox(height: 16.h),
-            Text('No results found', style: TextStyle(fontSize: 18.sp, color: AppTheme.textSecondary)),
-            SizedBox(height: 8.h),
-            Text('Try different keywords', style: TextStyle(fontSize: 14.sp, color: Colors.grey)),
+            Text(
+              'No matching products found',
+              style: GoogleFonts.outfit(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Check spelling or search for backpack, headphones, sneakers',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12.sp,
+                color: AppTheme.textSecondary,
+              ),
+            ),
           ],
         ),
       );
@@ -157,9 +194,9 @@ class _SearchScreenState extends State<SearchScreen> {
       padding: EdgeInsets.all(16.w),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 16.w,
-        mainAxisSpacing: 16.h,
+        childAspectRatio: 0.58,
+        crossAxisSpacing: 12.w,
+        mainAxisSpacing: 14.h,
       ),
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {

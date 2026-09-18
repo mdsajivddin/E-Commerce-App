@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme.dart';
 import '../../core/dummy_data.dart';
@@ -24,25 +25,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     'Top Rated',
   ];
 
-  IconData _getCategoryIcon(String iconName) {
-    switch (iconName) {
-      case 'shirt':
-        return LucideIcons.shirt;
-      case 'home':
-        return LucideIcons.home;
-      case 'smile':
-        return LucideIcons.smile;
-      case 'activity':
-        return LucideIcons.activity;
-      case 'smartphone':
-      default:
-        return LucideIcons.smartphone;
-    }
-  }
-
   List<Product> _getFilteredProducts() {
     List<Product> categoryProducts = DummyData.products
-        .where((p) => p.categoryId == widget.category.id)
+        .where((p) =>
+            p.category.toLowerCase().contains(widget.category.name.toLowerCase()) ||
+            widget.category.name.toLowerCase().contains(p.category.toLowerCase()))
         .toList();
 
     if (_selectedFilter == 'Popular') {
@@ -65,137 +52,155 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              _getCategoryIcon(widget.category.icon),
-              color: AppTheme.primaryColor,
-              size: 20.sp,
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              widget.category.name,
-              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.slidersHorizontal),
-            onPressed: () {
-              _showFilterBottomSheet(context);
-            },
+        title: Text(
+          widget.category.name,
+          style: GoogleFonts.outfit(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
           ),
-        ],
+        ),
       ),
       body: Column(
         children: [
-          // Filter Chips Horizontal Scroll
+          // Category Banner Header
           Container(
-            height: 50.h,
-            padding: EdgeInsets.symmetric(vertical: 8.h),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
+            margin: EdgeInsets.all(16.w),
+            height: 120.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.r),
+              image: DecorationImage(
+                image: NetworkImage(widget.category.image),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20.r),
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.85),
+                    Colors.black.withValues(alpha: 0.3),
+                  ],
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(widget.category.icon, color: Colors.white, size: 24.sp),
+                  ),
+                  SizedBox(width: 14.w),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.category.name,
+                          style: GoogleFonts.outfit(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          widget.category.subcategories.join(' • '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11.sp,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Filters row
+          SizedBox(
+            height: 36.h,
+            child: ListView.separated(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
               itemCount: _filters.length,
+              separatorBuilder: (_, __) => SizedBox(width: 8.w),
               itemBuilder: (context, index) {
                 final filter = _filters[index];
                 final isSelected = _selectedFilter == filter;
-                return Padding(
-                  padding: EdgeInsets.only(right: 8.w),
-                  child: FilterChip(
-                    label: Text(
-                      filter,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: isSelected ? Colors.white : AppTheme.textPrimary,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
+
+                return ChoiceChip(
+                  label: Text(
+                    filter,
+                    style: GoogleFonts.outfit(
+                      fontSize: 11.sp,
+                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                      color: isSelected ? Colors.white : AppTheme.textPrimary,
                     ),
-                    selected: isSelected,
-                    onSelected: (selected) {
+                  ),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    if (selected) {
                       setState(() {
                         _selectedFilter = filter;
                       });
-                    },
-                    backgroundColor: Colors.white,
-                    selectedColor: AppTheme.primaryColor,
-                    checkmarkColor: Colors.white,
+                    }
+                  },
+                  selectedColor: AppTheme.primaryColor,
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999.r),
                     side: BorderSide(
-                      color: isSelected
-                          ? AppTheme.primaryColor
-                          : Colors.grey.shade300,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.r),
+                      color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
                     ),
                   ),
+                  showCheckmark: false,
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 0),
                 );
               },
             ),
           ),
+          SizedBox(height: 14.h),
 
-          // Header Info
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${products.length} Products Found',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppTheme.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  _selectedFilter,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Product Grid or Empty View
+          // Product Grid
           Expanded(
             child: products.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          LucideIcons.packageOpen,
-                          size: 64.sp,
-                          color: Colors.grey.shade400,
-                        ),
-                        SizedBox(height: 16.h),
+                        Icon(LucideIcons.packageOpen, size: 48.sp, color: Colors.grey.shade400),
+                        SizedBox(height: 12.h),
                         Text(
-                          'No products in ${widget.category.name}',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
+                          'No products found in this category',
+                          style: GoogleFonts.outfit(
+                            fontSize: 14.sp,
                             color: AppTheme.textSecondary,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
                   )
                 : GridView.builder(
-                    padding: EdgeInsets.all(16.w),
+                    padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.72,
-                      crossAxisSpacing: 16.w,
-                      mainAxisSpacing: 16.h,
+                      childAspectRatio: 0.58,
+                      crossAxisSpacing: 12.w,
+                      mainAxisSpacing: 14.h,
                     ),
                     itemCount: products.length,
                     itemBuilder: (context, index) {
@@ -205,71 +210,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showFilterBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Filter By',
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(LucideIcons.x),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              Divider(color: Colors.grey.shade200),
-              ..._filters.map((filter) {
-                return ListTile(
-                  title: Text(
-                    filter,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: _selectedFilter == filter
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                      color: _selectedFilter == filter
-                          ? AppTheme.primaryColor
-                          : AppTheme.textPrimary,
-                    ),
-                  ),
-                  trailing: _selectedFilter == filter
-                      ? const Icon(
-                          LucideIcons.check,
-                          color: AppTheme.primaryColor,
-                        )
-                      : null,
-                  onTap: () {
-                    setState(() {
-                      _selectedFilter = filter;
-                    });
-                    Navigator.pop(context);
-                  },
-                );
-              }),
-            ],
-          ),
-        );
-      },
     );
   }
 }
